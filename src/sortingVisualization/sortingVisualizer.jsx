@@ -15,6 +15,7 @@ export default class sortingVisualizer extends React.Component {
       getBubbleAnimation,
       mergeSort,
       quickSortAnimations,
+      bar_width,
     } = this.props;
 
     return (
@@ -27,6 +28,7 @@ export default class sortingVisualizer extends React.Component {
               backgroundColor: PRIMARY_COLOR,
               height: `${value}px`,
               textAlign: "justify",
+              width: bar_width,
             }}
           ></div>
         ))}

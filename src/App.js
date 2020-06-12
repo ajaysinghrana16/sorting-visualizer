@@ -6,13 +6,20 @@ import { quickSort } from "./sortingAlgo/quickSort";
 import SortingVisualizer from "./sortingVisualization/sortingVisualizer";
 import NavBar from "./navBar/navBar";
 
-const NUMBER_OF_ARRAY_BARS = 40;
-
-const ANIMATION_SPEED_MS = 50;
+/* Global variables (We need to separtely operate on the global variables and the state variables, 
+  because we need Global variables to constant throughout)*/
 
 const PRIMARY_COLOR = "turquoise";
 
 const SECONDARY_COLOR = "pink";
+
+const NUMBER_OF_ARRAY_BARS_INITIAL = 4;
+const ANIMATION_SPEED_MS_INITIAL = 300;
+const bar_width_initial = "30px";
+
+const NUMBER_OF_ARRAY_BARS_FINAL = 100;
+const ANIMATION_SPEED_MS_FINAL = 5;
+const bar_width_final = "3px";
 
 class App extends Component {
   constructor(props) {
@@ -20,20 +27,70 @@ class App extends Component {
   }
 
   state = {
+    value: 1,
+    speed_value: 1,
     array: [],
+    NUMBER_OF_ARRAY_BARS: NUMBER_OF_ARRAY_BARS_INITIAL,
+    ANIMATION_SPEED_MS: ANIMATION_SPEED_MS_INITIAL,
+    bar_width: bar_width_initial,
   };
 
   componentDidMount() {
+    console.log("Component DidMount() called");
     this.resetArray();
   }
 
   resetArray = () => {
+    /* Resets the array based on the Updated state variables */
     const array = [];
-    for (let i = 0; i < NUMBER_OF_ARRAY_BARS; i++) {
+    for (let i = 0; i < this.state.NUMBER_OF_ARRAY_BARS; i++) {
       array.push(randomIntFromInterval(5, 730));
     }
-    console.log(array);
-    this.setState({ array });
+    this.setState({ array: array });
+  };
+
+  handleArraySizeOnChange = (event) => {
+    /* Handles the onChange method of "Vary the array size" slider */
+
+    let value = event.target.value;
+    console.log("Under handleArraySizeOnChange()");
+    console.log("this.state.value", value);
+    let array_bars =
+      NUMBER_OF_ARRAY_BARS_INITIAL +
+      Math.ceil(
+        ((parseInt(value) - 1) *
+          (NUMBER_OF_ARRAY_BARS_FINAL - NUMBER_OF_ARRAY_BARS_INITIAL)) /
+          99
+      );
+    let width =
+      parseInt(bar_width_initial) -
+      ((parseInt(value) - 1) *
+        (parseInt(bar_width_initial) - parseInt(bar_width_final))) /
+        99;
+
+    /* Since the setState is asynchronous we have exclusively pass the updated state variables to the this.resetArray() function */
+    this.setState(
+      {
+        value: value,
+        NUMBER_OF_ARRAY_BARS: array_bars,
+        bar_width: `${width}px`,
+      },
+      () => this.resetArray()
+    );
+  };
+
+  handleSpeedChange = (event) => {
+    /* It handles the speed on which you want the algorithm to run*/
+    let speed_value = event.target.value;
+    let speed =
+      ANIMATION_SPEED_MS_INITIAL -
+      ((parseInt(speed_value) - 1) *
+        (ANIMATION_SPEED_MS_INITIAL - ANIMATION_SPEED_MS_FINAL)) /
+        99;
+    this.setState({
+      speed_value: speed_value,
+      ANIMATION_SPEED_MS: speed,
+    });
   };
 
   /* Do bind this to "this" using ()=>*/
@@ -54,13 +111,13 @@ class App extends Component {
         setTimeout(() => {
           barOneStyle.backgroundColor = color;
           barTwoStyle.backgroundColor = color;
-        }, i * ANIMATION_SPEED_MS);
+        }, i * this.state.ANIMATION_SPEED_MS);
       } else {
         setTimeout(() => {
           const [barOneIdx, newHeight] = animations[i];
           const barOneStyle = arrayBars[barOneIdx].style;
           barOneStyle.height = `${newHeight}px`;
-        }, i * ANIMATION_SPEED_MS);
+        }, i * this.state.ANIMATION_SPEED_MS);
       }
     }
   };
@@ -81,12 +138,12 @@ class App extends Component {
         // Change the heights of both bars (swap the heights)
         arrayBars[barOneIdx].style.height = `${barTwoHeight}px `;
         arrayBars[barTwoIdx].style.height = `${barOneHeight}px`;
-      }, (i / 2) * ANIMATION_SPEED_MS);
+      }, (i / 2) * this.state.ANIMATION_SPEED_MS);
       setTimeout(() => {
         // Change the color back to primary color
         arrayBars[barOneIdx].style.backgroundColor = PRIMARY_COLOR;
         arrayBars[barTwoIdx].style.backgroundColor = PRIMARY_COLOR;
-      }, ((i + 1) / 2) * ANIMATION_SPEED_MS);
+      }, ((i + 1) / 2) * this.state.ANIMATION_SPEED_MS);
     }
 
     /* for (let i = 0; i < NUMBER_OF_ARRAY_BARS; i++) {
@@ -128,13 +185,13 @@ class App extends Component {
           // Change the heights of both bars (swap the heights)
           arrayBars[barOneIdx].style.height = `${barTwoHeight}px `;
           arrayBars[barTwoIdx].style.height = `${barOneHeight}px`;
-        }, j * ANIMATION_SPEED_MS);
+        }, j * this.state.ANIMATION_SPEED_MS);
 
         setTimeout(() => {
           // Change the color back to primary color
           arrayBars[barOneIdx].style.backgroundColor = PRIMARY_COLOR;
           arrayBars[barTwoIdx].style.backgroundColor = PRIMARY_COLOR;
-        }, (j + 0.5) * ANIMATION_SPEED_MS);
+        }, (j + 0.5) * this.state.ANIMATION_SPEED_MS);
         j++;
       }
     }
@@ -165,10 +222,13 @@ class App extends Component {
     quickSort(quickSortedResult, 0, array.length - 1);
     console.log("Quick Sort array -> ", quickSortedResult);
   };
+
   render() {
     return (
       <div className="App">
         <NavBar
+          ANIMATION_SPEED_MS={this.state.ANIMATION_SPEED_MS}
+          NUMBER_OF_ARRAY_BARS={this.state.NUMBER_OF_ARRAY_BARS}
           array={this.state.array}
           resetArray={this.resetArray}
           testSortingAlgo={this.testSortingAlgo}
@@ -176,6 +236,31 @@ class App extends Component {
           mergeSort={this.mergeSort}
           quickSortAnimations={this.quickSortAnimations}
         />
+        <div className="slider">
+          <div className="sliderH1">Vary the array size</div>
+          <input
+            type="range"
+            min={1}
+            max={100}
+            value={this.state.value}
+            className="sliderComp"
+            onChange={(event) => this.handleArraySizeOnChange(event)}
+          />
+        </div>
+
+        {
+          <div className="slider">
+            <div className="sliderH1">Speed</div>
+            <input
+              type="range"
+              min={1}
+              max={100}
+              value={this.state.speed_value}
+              className="slideComp"
+              onChange={(event) => this.handleSpeedChange(event)}
+            />
+          </div>
+        }
         <SortingVisualizer
           array={this.state.array}
           resetArray={this.resetArray}
@@ -183,6 +268,7 @@ class App extends Component {
           getBubbleAnimation={this.getBubbleAnimation}
           mergeSort={this.mergeSort}
           quickSortAnimations={this.quickSortAnimations}
+          bar_width={this.state.bar_width}
         />
       </div>
     );
@@ -190,10 +276,12 @@ class App extends Component {
 }
 
 function randomIntFromInterval(min, max) {
+  /* Generates random integers within a sepcified range*/
   return Math.floor(Math.random() * (max - min) + min);
 }
 
 function arraysAreEqual(arrayOne, arrayTwo) {
+  /* To check whether our sorting algorithms are working as expected */
   if (arrayOne.length !== arrayTwo.length) return false;
   for (let i = 0; i < arrayOne.length; i++) {
     if (arrayOne[i] !== arrayTwo[i]) {
