@@ -7,15 +7,17 @@ import SortingVisualizer from "./sortingVisualization/sortingVisualizer";
 import NavBar from "./navBar/navBar";
 
 /* Global variables (We need to separtely operate on the global variables and the state variables, 
-  because we need Global variables to constant throughout)*/
+  because we need Global variables to be constant throughout)*/
 
-const PRIMARY_COLOR = "turquoise";
+const PRIMARY_COLOR = "rgba(204, 51, 255, 0.6)";
 
-const SECONDARY_COLOR = "pink";
+const SECONDARY_COLOR = "rgba(255, 0, 102, 0.6)";
+
+const FINAL_COLOR = "rgb(153, 204, 255, 0.8)";
 
 const NUMBER_OF_ARRAY_BARS_INITIAL = 4;
-const ANIMATION_SPEED_MS_INITIAL = 300;
-const bar_width_initial = "30px";
+const ANIMATION_SPEED_MS_INITIAL = 500;
+const bar_width_initial = "50px";
 
 const NUMBER_OF_ARRAY_BARS_FINAL = 100;
 const ANIMATION_SPEED_MS_FINAL = 5;
@@ -41,6 +43,13 @@ class App extends Component {
   }
 
   resetArray = () => {
+    const arrayBars = document.getElementsByClassName("array-bar");
+    /* Turn the color of the bars to the default color when array is not sorted (helpful when you generate 
+      new array after you have already done sorting before) */
+    for (let Idx = 0; Idx < arrayBars.length; Idx++) {
+      arrayBars[Idx].style.backgroundColor = PRIMARY_COLOR;
+    }
+
     /* Resets the array based on the Updated state variables */
     const array = [];
     for (let i = 0; i < this.state.NUMBER_OF_ARRAY_BARS; i++) {
@@ -53,8 +62,6 @@ class App extends Component {
     /* Handles the onChange method of "Vary the array size" slider */
 
     let value = event.target.value;
-    console.log("Under handleArraySizeOnChange()");
-    console.log("this.state.value", value);
     let array_bars =
       NUMBER_OF_ARRAY_BARS_INITIAL +
       Math.ceil(
@@ -101,7 +108,6 @@ class App extends Component {
     console.log("After call -> ", this.state.array);
     for (let i = 0; i < animations.length; i++) {
       const arrayBars = document.getElementsByClassName("array-bar");
-      //console.log(arrayBars[0]);
       const isColorChange = i % 3 !== 2;
       if (isColorChange) {
         const [barOneIdx, barTwoIdx] = animations[i];
@@ -125,8 +131,15 @@ class App extends Component {
   getBubbleAnimation = () => {
     const animations = getBubbleSortAnimation(this.state.array);
 
+    /*  */
+    const arrayBars = document.getElementsByClassName("array-bar");
+    for (let Idx = 0; Idx < arrayBars.length; Idx = Idx + 1) {
+      arrayBars[Idx].style.backgroundColor = PRIMARY_COLOR;
+    }
+
     for (let i = 0; i < animations.length - 1; i = i + 2) {
       const arrayBars = document.getElementsByClassName("array-bar");
+      /* console.log("arrayBars ->", arrayBars); */
       const [barOneIdx, barTwoIdx] = animations[i];
       const [barOneHeight, barTwoHeight] = animations[i + 1];
 
@@ -146,28 +159,26 @@ class App extends Component {
       }, ((i + 1) / 2) * this.state.ANIMATION_SPEED_MS);
     }
 
-    /* for (let i = 0; i < NUMBER_OF_ARRAY_BARS; i++) {
-      const arrayBars = document.getElementsByClassName("array-bar");
-      setTimeout(() => {
-        arrayBars[NUMBER_OF_ARRAY_BARS - i - 1].style.backgroundColor = "blue";
-      }, (NUMBER_OF_ARRAY_BARS - i - 1) * ANIMATION_SPEED_MS);
-    } */
+    /* Handling the case where array already sorted - So we have to first turn the color to PRIMARY COLOR and
+    then after some time change it back to FINAL COLOR */
 
-    /* const arrayBars = document.getElementsByClassName("array-bar");
-    console.log(arrayBars.length);
-    for (let i = 0; i < arrayBars.length; i++) {
+    for (let Idx = 0; Idx < this.state.NUMBER_OF_ARRAY_BARS; Idx++) {
       setTimeout(() => {
-        //Change the color of all the bars to an another color
-        arrayBars[i].style.backgroundColor = "blue";
-      }, ((i + 4) / 2) * ANIMATION_SPEED_MS);
+        arrayBars[Idx].style.backgroundColor = FINAL_COLOR;
+        console.log(arrayBars[Idx].style.backgroundColor);
+      }, (animations.length / 2 + 10) * this.state.ANIMATION_SPEED_MS);
     }
-  } */
   };
 
   quickSortAnimations = () => {
     const animations = [];
     quickSort(animations, this.state.array, 0, this.state.array.length - 1);
-    console.log(animations);
+    /* console.log(animations); */
+
+    const arrayBars = document.getElementsByClassName("array-bar");
+    for (let Idx = 0; Idx < arrayBars.length; Idx = Idx + 1) {
+      arrayBars[Idx].style.backgroundColor = PRIMARY_COLOR;
+    }
 
     // Now swapping the right indexes
     let j = 0;
@@ -195,6 +206,14 @@ class App extends Component {
         j++;
       }
     }
+
+    /* Handling the case where array already sorted - So we have to first turn the color to PRIMARY COLOR and
+    then after some time change it back to FINAL COLOR */
+    for (let Idx = 0; Idx < arrayBars.length; Idx++) {
+      setTimeout(() => {
+        arrayBars[Idx].style.backgroundColor = FINAL_COLOR;
+      }, (j + 10) * this.state.ANIMATION_SPEED_MS);
+    }
   };
 
   testSortingAlgo = () => {
@@ -209,6 +228,14 @@ class App extends Component {
       quickSort(quickSortedResult, 0, array.length - 1);
       console.log(arraysAreEqual(inBuiltMethodResult, quickSortedResult));
     }
+  };
+
+  displayNumbersOnArrayOrNot = () => {
+    /* Decides the color of the text on the array bars */
+    if (this.state.array.length < 16) {
+      return "white";
+    }
+    return "transparent";
   };
 
   testSortingAlgoWithOneExample = () => {
@@ -236,31 +263,29 @@ class App extends Component {
           mergeSort={this.mergeSort}
           quickSortAnimations={this.quickSortAnimations}
         />
-        <div className="slider">
-          <div className="sliderH1">Vary the array size</div>
-          <input
-            type="range"
-            min={1}
-            max={100}
-            value={this.state.value}
-            className="sliderComp"
-            onChange={(event) => this.handleArraySizeOnChange(event)}
-          />
-        </div>
+        <div>
+          <div className="Array_size_slider">
+            Vary the array size
+            <input
+              type="range"
+              min={1}
+              max={100}
+              value={this.state.value}
+              onChange={(event) => this.handleArraySizeOnChange(event)}
+            />
+          </div>
 
-        {
-          <div className="slider">
-            <div className="sliderH1">Speed</div>
+          <div className="Speed_slider">
+            Speed
             <input
               type="range"
               min={1}
               max={100}
               value={this.state.speed_value}
-              className="slideComp"
               onChange={(event) => this.handleSpeedChange(event)}
             />
           </div>
-        }
+        </div>
         <SortingVisualizer
           array={this.state.array}
           resetArray={this.resetArray}
@@ -269,6 +294,7 @@ class App extends Component {
           mergeSort={this.mergeSort}
           quickSortAnimations={this.quickSortAnimations}
           bar_width={this.state.bar_width}
+          displayNumbersOnArrayOrNot={this.displayNumbersOnArrayOrNot}
         />
       </div>
     );
