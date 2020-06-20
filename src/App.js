@@ -7,7 +7,9 @@ import SortingVisualizer from "./sortingVisualization/sortingVisualizer";
 import NavBar from "./navBar/navBar";
 
 /* Global variables (We need to separtely operate on the global variables and the state variables, 
-  because we need Global variables to be constant throughout)*/
+  because we need Global variables to be constant throughout)
+  
+  NOTE: If you console.log() a lot, it can slow down the components*/
 
 const PRIMARY_COLOR = "rgba(204, 51, 255, 0.6)";
 
@@ -32,9 +34,11 @@ class App extends Component {
     value: 1,
     speed_value: 1,
     array: [],
+    arrayCopy: [],
     NUMBER_OF_ARRAY_BARS: NUMBER_OF_ARRAY_BARS_INITIAL,
     ANIMATION_SPEED_MS: ANIMATION_SPEED_MS_INITIAL,
     bar_width: bar_width_initial,
+    buttons_state: ["enabled", "enabled", "enabled", "enabled", 0, 0],
   };
 
   componentDidMount() {
@@ -43,6 +47,9 @@ class App extends Component {
   }
 
   resetArray = () => {
+    /* Disable other buttons */
+    this.handleButtonDisable();
+
     const arrayBars = document.getElementsByClassName("array-bar");
     /* Turn the color of the bars to the default color when array is not sorted (helpful when you generate 
       new array after you have already done sorting before) */
@@ -55,7 +62,37 @@ class App extends Component {
     for (let i = 0; i < this.state.NUMBER_OF_ARRAY_BARS; i++) {
       array.push(randomIntFromInterval(5, 730));
     }
-    this.setState({ array: array });
+
+    /* Creating a deep copy of the array */
+    let arrayCopy = [...array];
+    this.setState({ array: array, arrayCopy: arrayCopy });
+
+    /* Re-enable other buttons */
+    this.handleButtonEnable();
+  };
+
+  handleButtonDisable = () => {
+    /* Disabling all the buttons */
+    for (let Idx = 0; Idx < this.state.buttons_state.length - 2; Idx++) {
+      this.state.buttons_state[Idx] = "disabled";
+    }
+
+    /* Disabling the range sliders */
+    this.state.buttons_state[4] = 1;
+    this.state.buttons_state[5] = 1;
+    this.setState({ buttons_state: this.state.buttons_state });
+  };
+
+  handleButtonEnable = () => {
+    /* Once the sorting is done, we can have our button back to be enabled */
+    for (let Idx = 0; Idx < this.state.buttons_state.length - 2; Idx++) {
+      this.state.buttons_state[Idx] = "enabled";
+    }
+
+    /* Enabling the range sliders */
+    this.state.buttons_state[4] = 0;
+    this.state.buttons_state[5] = 0;
+    this.setState({ buttons_state: this.state.buttons_state });
   };
 
   handleArraySizeOnChange = (event) => {
@@ -100,6 +137,10 @@ class App extends Component {
     });
   };
 
+  handleExit = () => {
+    this.resetArray();
+  };
+
   /* Do bind this to "this" using ()=>*/
   mergeSort = () => {
     console.log(this.state);
@@ -129,17 +170,22 @@ class App extends Component {
   };
 
   getBubbleAnimation = () => {
+    /* Disable other buttons */
+    this.handleButtonDisable();
+
     const animations = getBubbleSortAnimation(this.state.array);
 
-    /*  */
+    /* Reseting the color back to the PRIMARY COLOR */
     const arrayBars = document.getElementsByClassName("array-bar");
     for (let Idx = 0; Idx < arrayBars.length; Idx = Idx + 1) {
       arrayBars[Idx].style.backgroundColor = PRIMARY_COLOR;
     }
 
+    console.log("Entering the animation Model!");
+    /* console.log("Array is -> ", this.state.arrayCopy); */
+
     for (let i = 0; i < animations.length - 1; i = i + 2) {
       const arrayBars = document.getElementsByClassName("array-bar");
-      /* console.log("arrayBars ->", arrayBars); */
       const [barOneIdx, barTwoIdx] = animations[i];
       const [barOneHeight, barTwoHeight] = animations[i + 1];
 
@@ -151,7 +197,15 @@ class App extends Component {
         // Change the heights of both bars (swap the heights)
         arrayBars[barOneIdx].style.height = `${barTwoHeight}px `;
         arrayBars[barTwoIdx].style.height = `${barOneHeight}px`;
+
+        /* Swapping the values of the arrayCopy state variable just like the arrayBars height */
+        /* We can not do it using array state variable because after returning from getBubbleAnimations(), array is Sorted 
+        and we need the original unsorted one to render the array elements change */
+        this.state.arrayCopy[barOneIdx] = barTwoHeight;
+        this.state.arrayCopy[barTwoIdx] = barOneHeight;
+        this.setState({ arrayCopy: this.state.arrayCopy });
       }, (i / 2) * this.state.ANIMATION_SPEED_MS);
+
       setTimeout(() => {
         // Change the color back to primary color
         arrayBars[barOneIdx].style.backgroundColor = PRIMARY_COLOR;
@@ -159,22 +213,36 @@ class App extends Component {
       }, ((i + 1) / 2) * this.state.ANIMATION_SPEED_MS);
     }
 
+    /* console.log("arrayCopy is -> ", this.state.arrayCopy); */
+
     /* Handling the case where array already sorted - So we have to first turn the color to PRIMARY COLOR and
     then after some time change it back to FINAL COLOR */
 
     for (let Idx = 0; Idx < this.state.NUMBER_OF_ARRAY_BARS; Idx++) {
       setTimeout(() => {
         arrayBars[Idx].style.backgroundColor = FINAL_COLOR;
-        console.log(arrayBars[Idx].style.backgroundColor);
-      }, (animations.length / 2 + 10) * this.state.ANIMATION_SPEED_MS);
+      }, (animations.length / 2 + 2) * this.state.ANIMATION_SPEED_MS);
     }
+
+    /* Re-enable other buttons, but after the array is sorted and array-bars are turned into the FINAL_COLOR 
+        -> USE SETTIMEOUT() for that*/
+
+    setTimeout(() => {
+      /* Enable all the buttons afterwards */
+      this.handleButtonEnable();
+    }, (animations.length / 2 + 3) * this.state.ANIMATION_SPEED_MS);
   };
 
   quickSortAnimations = () => {
+    /* Disable other buttons */
+    /* let buttons_state = this.state.buttons_state; */
+    this.handleButtonDisable();
+
     const animations = [];
     quickSort(animations, this.state.array, 0, this.state.array.length - 1);
     /* console.log(animations); */
 
+    /* Reseting the color back to the PRIMARY COLOR */
     const arrayBars = document.getElementsByClassName("array-bar");
     for (let Idx = 0; Idx < arrayBars.length; Idx = Idx + 1) {
       arrayBars[Idx].style.backgroundColor = PRIMARY_COLOR;
@@ -196,6 +264,13 @@ class App extends Component {
           // Change the heights of both bars (swap the heights)
           arrayBars[barOneIdx].style.height = `${barTwoHeight}px `;
           arrayBars[barTwoIdx].style.height = `${barOneHeight}px`;
+
+          /* Swapping the values of the arrayCopy state variable just like the arrayBars height */
+          /* We can not do it using array state variable because after returning from getBubbleAnimations(), array is Sorted 
+        and we need the original unsorted one to render the array elements change */
+          this.state.arrayCopy[barOneIdx] = barTwoHeight;
+          this.state.arrayCopy[barTwoIdx] = barOneHeight;
+          this.setState({ arrayCopy: this.state.arrayCopy });
         }, j * this.state.ANIMATION_SPEED_MS);
 
         setTimeout(() => {
@@ -212,8 +287,16 @@ class App extends Component {
     for (let Idx = 0; Idx < arrayBars.length; Idx++) {
       setTimeout(() => {
         arrayBars[Idx].style.backgroundColor = FINAL_COLOR;
-      }, (j + 10) * this.state.ANIMATION_SPEED_MS);
+      }, (j + 2) * this.state.ANIMATION_SPEED_MS);
     }
+
+    /* Re-enable other buttons, but after the array is sorted and array-bars are turned into the FINAL_COLOR 
+        -> USE SETTIMEOUT() for that*/
+
+    setTimeout(() => {
+      /* Enable all the buttons / options again */
+      this.handleButtonEnable();
+    }, (j + 3) * this.state.ANIMATION_SPEED_MS);
   };
 
   testSortingAlgo = () => {
@@ -254,11 +337,8 @@ class App extends Component {
     return (
       <div className="App">
         <NavBar
-          ANIMATION_SPEED_MS={this.state.ANIMATION_SPEED_MS}
-          NUMBER_OF_ARRAY_BARS={this.state.NUMBER_OF_ARRAY_BARS}
-          array={this.state.array}
+          buttons_state={this.state.buttons_state}
           resetArray={this.resetArray}
-          testSortingAlgo={this.testSortingAlgo}
           getBubbleAnimation={this.getBubbleAnimation}
           mergeSort={this.mergeSort}
           quickSortAnimations={this.quickSortAnimations}
@@ -267,6 +347,7 @@ class App extends Component {
           <div className="Array_size_slider">
             Vary the array size
             <input
+              disabled={parseInt(this.state.buttons_state[4])}
               type="range"
               min={1}
               max={100}
@@ -278,6 +359,7 @@ class App extends Component {
           <div className="Speed_slider">
             Speed
             <input
+              disabled={parseInt(this.state.buttons_state[5])}
               type="range"
               min={1}
               max={100}
@@ -287,12 +369,7 @@ class App extends Component {
           </div>
         </div>
         <SortingVisualizer
-          array={this.state.array}
-          resetArray={this.resetArray}
-          testSortingAlgo={this.testSortingAlgo}
-          getBubbleAnimation={this.getBubbleAnimation}
-          mergeSort={this.mergeSort}
-          quickSortAnimations={this.quickSortAnimations}
+          arrayCopy={this.state.arrayCopy}
           bar_width={this.state.bar_width}
           displayNumbersOnArrayOrNot={this.displayNumbersOnArrayOrNot}
         />

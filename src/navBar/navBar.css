@@ -22,3 +22,9 @@
 .toolbar a:hover {
   color: #777777;
 }
+
+.toolbar .disabled {
+  pointer-events: none;
+  cursor: default;
+  color: rgb(218, 218, 248);
+}
