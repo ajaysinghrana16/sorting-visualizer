@@ -186,6 +186,7 @@ class App extends Component {
 
     for (let i = 0; i < animations.length - 1; i = i + 2) {
       const arrayBars = document.getElementsByClassName("array-bar");
+      /* console.log("arrayBars ->", arrayBars); */
       const [barOneIdx, barTwoIdx] = animations[i];
       const [barOneHeight, barTwoHeight] = animations[i + 1];
 
