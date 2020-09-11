@@ -12,4 +12,54 @@
   color: white;
   display: inline-block;
   margin: 0 1px;
+  text-align: center;
+}
+
+.left-top {
+  transform: scale(0.5);
+}
+
+/* #legend-container {
+  position: absolute;
+  bottom: 120px;
+  left: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  color: rgb(153, 153, 255);
+  padding: 10px;
+}
+
+#legend-container .legend-box {
+  display: inline-block;
+  height: 20px;
+  width: 20px;
+  border: 2px solid;
+} */
+
+/* .legend-container {
+  align-items: center;
+  margin-bottom: 15px;
+} */
+
+.legend-container {
+  position: absolute;
+  right: 15px;
+  bottom: 80px;
+  font-family: Arial, Helvetica, sans-serif;
+  color: rgb(233, 227, 227);
+  background-color: rgb(144, 159, 218);
+  border: 2px #ccc solid;
+}
+
+.legend-Element {
+  display: flex;
+  margin: 15px;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.legend-box {
+  height: 20px;
+  width: 20px;
+  border: 1px solid black;
+  margin-right: 5px;
 }

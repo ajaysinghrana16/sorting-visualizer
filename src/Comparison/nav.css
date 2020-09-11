@@ -1,0 +1,14 @@
+.tool {
+  background-color: rgb(153, 153, 255);
+  padding: 1.6em;
+  text-align: center;
+  color: white;
+  font-family: Arial, Helvetica, sans-serif;
+  text-decoration: none;
+}
+
+.tool a {
+  color: white;
+  margin-right: 40px;
+  text-decoration: none;
+}

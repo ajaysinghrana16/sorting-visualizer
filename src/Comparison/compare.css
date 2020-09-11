@@ -1,0 +1,8 @@
+.Outer-container {
+  display: flex;
+  justify-content: space-around;
+  background-color: rgb(230, 230, 230);
+  border-top: 5px solid rgb(255, 80, 80);
+  border-bottom: 5px solid rgb(255, 80, 80);
+  margin-bottom: 20px;
+}
